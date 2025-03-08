@@ -1,0 +1,8 @@
+#!/bin/bash
+
+/opt/kafka/bin/kafka-topics.sh \
+    --bootstrap-server localhost:9092 \
+    --topic seismic-data \
+    --create \
+    --partitions 3 \
+    --replication-factor 1
