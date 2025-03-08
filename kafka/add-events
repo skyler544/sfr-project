@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cat /kafka/events \
+    | /opt/kafka/bin/kafka-console-producer.sh \
+          --bootstrap-server broker-1:19092,broker-2:19092,broker-3:19092 \
+          --topic seismic-data
