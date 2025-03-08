@@ -105,6 +105,8 @@ services:
         - controller-1
         - controller-2
         - controller-3
+      volumes:
+          - ./kafka:/kafka
 
     broker-2:
       image: apache/kafka:latest
@@ -125,6 +127,8 @@ services:
         - controller-1
         - controller-2
         - controller-3
+      volumes:
+          - ./kafka:/kafka
 
     broker-3:
       image: apache/kafka:latest
@@ -145,6 +149,8 @@ services:
         - controller-1
         - controller-2
         - controller-3
+      volumes:
+          - ./kafka:/kafka
 
 
 networks:
