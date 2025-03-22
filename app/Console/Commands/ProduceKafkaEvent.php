@@ -2,11 +2,13 @@
 
 namespace App\Console\Commands;
 
-use AvroIOBinaryEncoder;
-use AvroStringIO;
-use AvroIODatumWriter;
 use AvroSchema;
+use FlixTech\AvroSerializer\Objects\RecordSerializer;
+use FlixTech\SchemaRegistryApi\Registry\Cache\AvroObjectCacheAdapter;
+use FlixTech\SchemaRegistryApi\Registry\CachedRegistry;
+use FlixTech\SchemaRegistryApi\Registry\PromisingRegistry;
 use Illuminate\Console\Command;
+use GuzzleHttp\Client as GuzzleClient;
 use RdKafka\Conf;
 use RdKafka\Producer;
 
@@ -54,16 +56,25 @@ class ProduceKafkaEvent extends Command
     }
 
     private function avroEncode(array $event): string {
-        // TODO pull schema from remote
+        $registry = new CachedRegistry(
+            new PromisingRegistry(
+                new GuzzleClient(['base_uri' => 'http://schema-registry:8081'])
+            ),
+            new AvroObjectCacheAdapter()
+        );
+
         $schemaJson = file_get_contents(resource_path('schemas/seismic-data.avsc'));
         $schema = AvroSchema::parse($schemaJson);
 
-        $writer = new AvroIODatumWriter($schema);
+        $serializer = new RecordSerializer(
+            $registry,
+            [
+                // maybe better to set it to manually register
+                RecordSerializer::OPTION_REGISTER_MISSING_SCHEMAS => true,
+                RecordSerializer::OPTION_REGISTER_MISSING_SUBJECTS => true,
+            ]
+        );
 
-        $io = new AvroStringIO();
-        $encoder = new AvroIOBinaryEncoder($io);
-        $writer = new AvroIODatumWriter($schema);
-        $writer->write($event, $encoder);
-        return $io->string();
+        return $serializer->encodeRecord('seismic-data-value', $schema, $event);
     }
 }

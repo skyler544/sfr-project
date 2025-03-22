@@ -10,7 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "flix-tech/avro-php": "^5.1",
+        "flix-tech/avro-serde-php": "^3.0",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9"
     },

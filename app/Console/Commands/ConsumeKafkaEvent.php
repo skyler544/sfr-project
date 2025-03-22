@@ -2,14 +2,15 @@
 
 namespace App\Console\Commands;
 
-use AvroIOBinaryDecoder;
-use AvroIODatumReader;
-use AvroStringIO;
-use AvroSchema;
+use FlixTech\AvroSerializer\Objects\RecordSerializer;
+use FlixTech\SchemaRegistryApi\Registry\Cache\AvroObjectCacheAdapter;
+use FlixTech\SchemaRegistryApi\Registry\PromisingRegistry;
+use FlixTech\SchemaRegistryApi\Registry\CachedRegistry;
 use Illuminate\Console\Command;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
+use GuzzleHttp\Client as GuzzleClient;
 
 class ConsumeKafkaEvent extends Command {
     /**
@@ -59,13 +60,15 @@ class ConsumeKafkaEvent extends Command {
     }
 
     private function avroDecode(Message $message) {
-        // TODO pull schema from remote
-        $schemaJson = file_get_contents(resource_path('schemas/seismic-data.avsc'));
-        $schema = AvroSchema::parse($schemaJson);
-        $io = new AvroStringIO($message->payload);
-        $decoder = new AvroIOBinaryDecoder($io);
-        $reader = new AvroIODatumReader($schema);
-        $data = $reader->read($decoder);
-        return $data;
+        $registry = new CachedRegistry(
+            new PromisingRegistry(
+                new GuzzleClient(['base_uri' => 'http://schema-registry:8081'])
+            ),
+            new AvroObjectCacheAdapter()
+        );
+
+        $deserializer = new RecordSerializer($registry);
+
+        return $deserializer->decodeMessage($message->payload);
     }
 }
