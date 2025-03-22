@@ -31,7 +31,7 @@ class ProduceKafkaEvent extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
         // TODO make this happen in a loop with random numbers
         $events = [
@@ -55,7 +55,8 @@ class ProduceKafkaEvent extends Command
         $producer->flush(1000);
     }
 
-    private function avroEncode(array $event): string {
+    private function avroEncode(array $event): string
+    {
         $registry = new CachedRegistry(
             new PromisingRegistry(
                 new GuzzleClient(['base_uri' => 'http://schema-registry:8081'])

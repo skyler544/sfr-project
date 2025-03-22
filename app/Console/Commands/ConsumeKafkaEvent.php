@@ -12,7 +12,8 @@ use RdKafka\KafkaConsumer;
 use RdKafka\Message;
 use GuzzleHttp\Client as GuzzleClient;
 
-class ConsumeKafkaEvent extends Command {
+class ConsumeKafkaEvent extends Command
+{
     /**
      * The name and signature of the console command.
      *
@@ -46,7 +47,8 @@ class ConsumeKafkaEvent extends Command {
         }
     }
 
-    private function configureConsumer(): KafkaConsumer {
+    private function configureConsumer(): KafkaConsumer
+    {
         $conf = new Conf();
         $conf->set('group.id', 'seismic-data');
         $conf->set('metadata.broker.list', 'broker-1:19092,broker-2:19092,broker-3:19092');
@@ -59,7 +61,8 @@ class ConsumeKafkaEvent extends Command {
         return $consumer;
     }
 
-    private function avroDecode(Message $message) {
+    private function avroDecode(Message $message)
+    {
         $registry = new CachedRegistry(
             new PromisingRegistry(
                 new GuzzleClient(['base_uri' => 'http://schema-registry:8081'])
