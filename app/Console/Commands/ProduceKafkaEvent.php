@@ -2,9 +2,14 @@
 
 namespace App\Console\Commands;
 
+use AvroIOBinaryEncoder;
+use AvroStringIO;
+use AvroIODatumWriter;
+use AvroSchema;
 use Illuminate\Console\Command;
 use RdKafka\Conf;
 use RdKafka\Producer;
+use RdKafka\Metadata;
 
 class ProduceKafkaEvent extends Command
 {
@@ -29,22 +34,37 @@ class ProduceKafkaEvent extends Command
     {
         // TODO make this happen in a loop with random numbers
         $events = [
-            ["id" => 1, "latitude" => 10, "longitude" => 20, "depth" => 1, "energy" => 42],
-            ["id" => 2, "latitude" => 15, "longitude" => 28, "depth" => 0.45, "energy" => 100000],
+            ["id" => 1, "latitude" => 19.0, "longitude" => 20.0, "depth" => 12.0, "energy" => 42.0],
+            ["id" => 2, "latitude" => 15.0, "longitude" => 28.0, "depth" => 0.45, "energy" => 100000.0],
         ];
 
         $conf = new Conf();
         $conf->set('metadata.broker.list', 'broker-1:19092,broker-2:19092,broker-3:19092');
 
         $producer = new Producer($conf);
+
         $topic = $producer->newTopic('seismic-data');
 
         foreach ($events as $event) {
-            $message = json_encode($event);
+            $message = $this->avroEncode($event);
             $topic->produce(RD_KAFKA_PARTITION_UA, 0, $message);
             echo "Produced: $message\n";
         }
 
-        // $producer->flush(1000);
+        $producer->flush(1000);
+    }
+
+    private function avroEncode(array $event): string {
+        // TODO pull schema from remote
+        $schemaJson = file_get_contents(resource_path('schemas/seismic-data.avsc'));
+        $schema = AvroSchema::parse($schemaJson);
+
+        $writer = new AvroIODatumWriter($schema);
+
+        $io = new AvroStringIO();
+        $encoder = new AvroIOBinaryEncoder($io);
+        $writer = new AvroIODatumWriter($schema);
+        $writer->write($event, $encoder);
+        return $io->string();
     }
 }
