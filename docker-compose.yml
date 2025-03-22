@@ -2,7 +2,7 @@ services:
 
     laravel.test:
         build:
-            context: './vendor/laravel/sail/runtimes/8.4'
+            context: ./docker
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
@@ -61,6 +61,8 @@ services:
         KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
         KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093
         KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      networks:
+          - sail
 
     controller-2:
       image: apache/kafka:latest
@@ -73,6 +75,8 @@ services:
         KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
         KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093
         KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      networks:
+          - sail
 
     controller-3:
       image: apache/kafka:latest
@@ -85,6 +89,8 @@ services:
         KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
         KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093
         KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      networks:
+          - sail
 
     broker-1:
       image: apache/kafka:latest
@@ -107,6 +113,8 @@ services:
         - controller-3
       volumes:
           - ./kafka:/kafka
+      networks:
+          - sail
 
     broker-2:
       image: apache/kafka:latest
@@ -129,6 +137,8 @@ services:
         - controller-3
       volumes:
           - ./kafka:/kafka
+      networks:
+          - sail
 
     broker-3:
       image: apache/kafka:latest
@@ -151,6 +161,8 @@ services:
         - controller-3
       volumes:
           - ./kafka:/kafka
+      networks:
+          - sail
 
 
 networks:
