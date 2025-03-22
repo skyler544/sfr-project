@@ -9,7 +9,6 @@ use AvroSchema;
 use Illuminate\Console\Command;
 use RdKafka\Conf;
 use RdKafka\Producer;
-use RdKafka\Metadata;
 
 class ProduceKafkaEvent extends Command
 {
