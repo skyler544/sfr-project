@@ -3,15 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Services\AvroService;
-use FlixTech\AvroSerializer\Objects\RecordSerializer;
-use FlixTech\SchemaRegistryApi\Registry\Cache\AvroObjectCacheAdapter;
-use FlixTech\SchemaRegistryApi\Registry\PromisingRegistry;
-use FlixTech\SchemaRegistryApi\Registry\CachedRegistry;
 use Illuminate\Console\Command;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
-use RdKafka\Message;
-use GuzzleHttp\Client as GuzzleClient;
 
 class ConsumeKafkaEvent extends Command
 {
@@ -35,6 +29,7 @@ class ConsumeKafkaEvent extends Command
     public function handle(): void
     {
         $consumer = $this->configureConsumer();
+        $avroService = new AvroService();
 
         while (true) {
             $message = $consumer->consume(10 * 1000);
@@ -42,8 +37,6 @@ class ConsumeKafkaEvent extends Command
                 echo "Error: {$message->errstr()}\n";
                 continue;
             }
-
-            $avroService = new AvroService();
 
             $message = json_encode($avroService->avroDecode($message));
             echo "Consumed: $message\n";

@@ -12,7 +12,7 @@ use RdKafka\Message;
 
 class AvroService
 {
-    public function avroEncode(array $event, string $schemaPath): string
+    public function avroEncode(array $event, string $schemaPath, string $subject): string
     {
         $registry = $this->getRegistry();
 
@@ -28,7 +28,7 @@ class AvroService
             ]
         );
 
-        return $serializer->encodeRecord('seismic-data-value', $schema, $event);
+        return $serializer->encodeRecord($subject, $schema, $event);
     }
 
     public function avroDecode(Message $message): array
