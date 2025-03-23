@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "EarthquakeEvent",
+  "fields": [
+    { "name": "id", "type": "int" },
+    { "name": "latitude", "type": "float" },
+    { "name": "longitude", "type": "float" },
+    { "name": "depth", "type": "float" },
+    { "name": "energy", "type": "float" }
+  ]
+}

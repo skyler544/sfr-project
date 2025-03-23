@@ -2,7 +2,7 @@ services:
 
     laravel.test:
         build:
-            context: './vendor/laravel/sail/runtimes/8.4'
+            context: ./docker
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
@@ -61,6 +61,8 @@ services:
         KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
         KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093
         KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      networks:
+          - sail
 
     controller-2:
       image: apache/kafka:latest
@@ -73,6 +75,8 @@ services:
         KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
         KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093
         KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      networks:
+          - sail
 
     controller-3:
       image: apache/kafka:latest
@@ -85,6 +89,8 @@ services:
         KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
         KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093
         KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      networks:
+          - sail
 
     broker-1:
       image: apache/kafka:latest
@@ -107,6 +113,8 @@ services:
         - controller-3
       volumes:
           - ./kafka:/kafka
+      networks:
+          - sail
 
     broker-2:
       image: apache/kafka:latest
@@ -129,6 +137,8 @@ services:
         - controller-3
       volumes:
           - ./kafka:/kafka
+      networks:
+          - sail
 
     broker-3:
       image: apache/kafka:latest
@@ -151,7 +161,25 @@ services:
         - controller-3
       volumes:
           - ./kafka:/kafka
+      networks:
+          - sail
 
+    schema-registry:
+      image: confluentinc/cp-schema-registry:7.5.0
+      container_name: schema-registry
+      ports:
+        - "8081:8081"
+      environment:
+        SCHEMA_REGISTRY_HOST_NAME: schema-registry
+        SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+        SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://broker-1:19092,PLAINTEXT://broker-2:19092,PLAINTEXT://broker-3:19092
+        SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: INFO
+      depends_on:
+        - broker-1
+        - broker-2
+        - broker-3
+      networks:
+        - sail
 
 networks:
     sail:
