@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Services\ProducerService;
 use Illuminate\Console\Command;
 
-class ProduceKafkaEvent extends Command
+class ProduceEventsCommand extends Command
 {
     /**
      * The name and signature of the console command.
