@@ -27,16 +27,14 @@ class AggregateEventsCommand extends Command
     public function handle(): void
     {
         $consumer = new ConsumerService('seismic-data');
+        $aggregatedEvents = [];
 
         while (true) {
             $message = $consumer->consume();
 
             if ($message) {
-                $message = json_encode($message);
-                echo "Consumed: $message\n";
+                $aggregatedEvents[$message['continent']][$message['id']] = $message;
             }
-            // TODO aggregation
         }
     }
-
 }
