@@ -3,37 +3,33 @@
 namespace App\Console\Commands;
 
 use App\Services\ConsumerService;
+use App\Services\ProducerService;
 use Illuminate\Console\Command;
 
 class AggregateEventsCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'app:consume-kafka-event';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
+    protected $signature = 'app:aggregate-kafka-event';
     protected $description = 'Command description';
 
-    /**
-     * Execute the console command.
-     */
     public function handle(): void
     {
         $consumer = new ConsumerService('seismic-data');
-        $aggregatedEvents = [];
+        $producer = new ProducerService(
+            'seismic-data-continent',
+            'schemas/seismic-data-continent.avsc',
+            'seismic-data-continent-value'
+        );
+        $aggregatedEvents = ['continents' => []];
 
         while (true) {
             $message = $consumer->consume();
 
             if ($message) {
-                $aggregatedEvents[$message['continent']][$message['id']] = $message;
+                $aggregatedEvents['continents'][$message['continent']]['event'.$message['id']] = $message;
+                $messageString = json_encode($message);
+                echo "Consumed: $messageString\n";
+
+                $producer->produceEvents($aggregatedEvents);
             }
         }
     }
