@@ -2,13 +2,8 @@
 
 namespace App\Console\Commands;
 
-use AvroSchema;
-use FlixTech\AvroSerializer\Objects\RecordSerializer;
-use FlixTech\SchemaRegistryApi\Registry\Cache\AvroObjectCacheAdapter;
-use FlixTech\SchemaRegistryApi\Registry\CachedRegistry;
-use FlixTech\SchemaRegistryApi\Registry\PromisingRegistry;
+use App\Services\AvroService;
 use Illuminate\Console\Command;
-use GuzzleHttp\Client as GuzzleClient;
 use RdKafka\Conf;
 use RdKafka\Producer;
 
@@ -39,15 +34,13 @@ class ProduceKafkaEvent extends Command
             ["id" => 2, "latitude" => 15.0, "longitude" => 28.0, "depth" => 0.45, "energy" => 100000.0],
         ];
 
-        $conf = new Conf();
-        $conf->set('metadata.broker.list', 'broker-1:19092,broker-2:19092,broker-3:19092');
-
-        $producer = new Producer($conf);
-
+        $producer = $this->configureProducer();
         $topic = $producer->newTopic('seismic-data');
 
+        $avroService = new AvroService();
+
         foreach ($events as $event) {
-            $message = $this->avroEncode($event);
+            $message = $avroService->avroEncode($event, 'schemas/seismic-data.avsc');
             $topic->produce(RD_KAFKA_PARTITION_UA, 0, $message);
             echo "Produced: $message\n";
         }
@@ -55,27 +48,12 @@ class ProduceKafkaEvent extends Command
         $producer->flush(1000);
     }
 
-    private function avroEncode(array $event): string
+    private function configureProducer(): Producer
     {
-        $registry = new CachedRegistry(
-            new PromisingRegistry(
-                new GuzzleClient(['base_uri' => 'http://schema-registry:8081'])
-            ),
-            new AvroObjectCacheAdapter()
-        );
+        $conf = new Conf();
+        $conf->set('metadata.broker.list', 'broker-1:19092,broker-2:19092,broker-3:19092');
 
-        $schemaJson = file_get_contents(resource_path('schemas/seismic-data.avsc'));
-        $schema = AvroSchema::parse($schemaJson);
-
-        $serializer = new RecordSerializer(
-            $registry,
-            [
-                // maybe better to set it to manually register
-                RecordSerializer::OPTION_REGISTER_MISSING_SCHEMAS => true,
-                RecordSerializer::OPTION_REGISTER_MISSING_SUBJECTS => true,
-            ]
-        );
-
-        return $serializer->encodeRecord('seismic-data-value', $schema, $event);
+        return new Producer($conf);
     }
+
 }

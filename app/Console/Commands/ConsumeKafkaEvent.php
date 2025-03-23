@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\AvroService;
 use FlixTech\AvroSerializer\Objects\RecordSerializer;
 use FlixTech\SchemaRegistryApi\Registry\Cache\AvroObjectCacheAdapter;
 use FlixTech\SchemaRegistryApi\Registry\PromisingRegistry;
@@ -42,7 +43,9 @@ class ConsumeKafkaEvent extends Command
                 continue;
             }
 
-            $message = json_encode($this->avroDecode($message));
+            $avroService = new AvroService();
+
+            $message = json_encode($avroService->avroDecode($message));
             echo "Consumed: $message\n";
         }
     }
@@ -61,17 +64,4 @@ class ConsumeKafkaEvent extends Command
         return $consumer;
     }
 
-    private function avroDecode(Message $message)
-    {
-        $registry = new CachedRegistry(
-            new PromisingRegistry(
-                new GuzzleClient(['base_uri' => 'http://schema-registry:8081'])
-            ),
-            new AvroObjectCacheAdapter()
-        );
-
-        $deserializer = new RecordSerializer($registry);
-
-        return $deserializer->decodeMessage($message->payload);
-    }
 }
