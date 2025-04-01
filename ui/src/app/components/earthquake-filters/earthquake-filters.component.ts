@@ -4,17 +4,21 @@ import {
   OnDestroy,
   ChangeDetectionStrategy,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
-import { EarthquakeService } from '../../services/earthquake.service';
+import { EarthquakeService } from '@app/services/earthquake.service';
+import { FilterCriteria } from '@app/models/filter-criteria';
 
 @Component({
   selector: 'earthquake-filters',
   templateUrl: './earthquake-filters.component.html',
   styleUrls: ['./earthquake-filters.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule],
 })
 export class EarthquakeFiltersComponent implements OnInit, OnDestroy {
-  filters: any;
+  filters: FilterCriteria | null = null;
   availableContinents: string[] = [];
   private subscription = new Subscription();
 

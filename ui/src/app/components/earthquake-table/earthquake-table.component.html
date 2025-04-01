@@ -53,7 +53,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let quake of paginatedData">
+      <tr *ngFor="let quake of paginatedData; trackBy: trackByQuake">
         <td>{{ quake.id }}</td>
         <td>{{ quake.continent }}</td>
         <td>{{ quake.latitude.toFixed(2) }}°</td>

@@ -5,6 +5,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Subscription, combineLatest } from 'rxjs';
 import { EarthquakeService } from '../../services/earthquake.service';
 import { Earthquake } from '../../models/earthquake';
@@ -15,6 +16,8 @@ import { SortColumn, SortDirection } from '../../models/sort-criteria';
   templateUrl: './earthquake-table.component.html',
   styleUrls: ['./earthquake-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule],
 })
 export class EarthquakeTableComponent implements OnInit, OnDestroy {
   earthquakes: Earthquake[] = [];
@@ -134,5 +137,9 @@ export class EarthquakeTableComponent implements OnInit, OnDestroy {
 
   getMinValue(a: number, b: number): number {
     return Math.min(a, b);
+  }
+
+  trackByQuake(index: number, item: Earthquake): number {
+    return item.id;
   }
 }
