@@ -1,0 +1,32 @@
+<div class="container">
+  <header>
+    <h1>{{ title }}</h1>
+    <p class="devs">Developed by: {{ devs.join(", ") }}</p>
+  </header>
+
+  <earthquake-filters
+    [minLatitude]="minLatitude"
+    [maxLatitude]="maxLatitude"
+    [minLongitude]="minLongitude"
+    [maxLongitude]="maxLongitude"
+    [minDepth]="minDepth"
+    [maxDepth]="maxDepth"
+    [minEnergy]="minEnergy"
+    [maxEnergy]="maxEnergy"
+    [selectedContinent]="selectedContinent"
+    [availableContinents]="availableContinents"
+    (filterChange)="onFilterChange($event)"
+    (resetFilters)="resetFilters()"
+  ></earthquake-filters>
+
+  <earthquake-table
+    [earthquakes]="filteredData"
+    [currentPage]="currentPage"
+    [pageSize]="pageSize"
+    [sortColumn]="sortColumn"
+    [sortDirection]="sortDirection"
+    (sort)="onSort($event)"
+    (resetSort)="resetSorting()"
+    (pageChange)="onPageChange($event)"
+  ></earthquake-table>
+</div>
