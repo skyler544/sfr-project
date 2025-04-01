@@ -1,44 +1,58 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+} from '@angular/core';
+import { Subscription } from 'rxjs';
+import { EarthquakeService } from '../../services/earthquake.service';
 
 @Component({
   selector: 'earthquake-filters',
   templateUrl: './earthquake-filters.component.html',
   styleUrls: ['./earthquake-filters.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EarthquakeFiltersComponent {
-  @Input() minLatitude: number | null = null;
-  @Input() maxLatitude: number | null = null;
-  @Input() minLongitude: number | null = null;
-  @Input() maxLongitude: number | null = null;
-  @Input() minDepth: number | null = null;
-  @Input() maxDepth: number | null = null;
-  @Input() minEnergy: number | null = null;
-  @Input() maxEnergy: number | null = null;
-  @Input() selectedContinent: string = '';
-  @Input() availableContinents: string[] = [];
+export class EarthquakeFiltersComponent implements OnInit, OnDestroy {
+  filters: any;
+  availableContinents: string[] = [];
+  private subscription = new Subscription();
 
-  @Output() filterChange = new EventEmitter<{ property: string; value: any }>();
-  @Output() resetFilters = new EventEmitter<void>();
+  constructor(private earthquakeService: EarthquakeService) {}
+
+  ngOnInit() {
+    this.availableContinents = this.earthquakeService.getAvailableContinents();
+
+    this.subscription.add(
+      this.earthquakeService.filters$.subscribe((filters) => {
+        this.filters = filters;
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
 
   handleNumberInput(event: Event, property: string) {
     const value = (event.target as HTMLInputElement).value;
 
     if (value === '') {
-      this.filterChange.emit({ property, value: null });
+      this.earthquakeService.updateFilter(property, null);
     } else {
       const numberValue = Number(value);
       if (!isNaN(numberValue)) {
-        this.filterChange.emit({ property, value: numberValue });
+        this.earthquakeService.updateFilter(property, numberValue);
       }
     }
   }
 
   handleContinentChange(event: Event) {
     const value = (event.target as HTMLSelectElement).value;
-    this.filterChange.emit({ property: 'selectedContinent', value });
+    this.earthquakeService.updateFilter('selectedContinent', value);
   }
 
   onResetFilters() {
-    this.resetFilters.emit();
+    this.earthquakeService.resetFilters();
   }
 }

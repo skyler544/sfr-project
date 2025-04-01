@@ -9,7 +9,7 @@
           <input
             type="number"
             id="minLatitude"
-            [value]="minLatitude || ''"
+            [value]="filters?.minLatitude || ''"
             (input)="handleNumberInput($event, 'minLatitude')"
             step="0.1"
             min="-90"
@@ -22,7 +22,7 @@
           <input
             type="number"
             id="maxLatitude"
-            [value]="maxLatitude || ''"
+            [value]="filters?.maxLatitude || ''"
             (input)="handleNumberInput($event, 'maxLatitude')"
             step="0.1"
             min="-90"
@@ -35,7 +35,7 @@
           <input
             type="number"
             id="minLongitude"
-            [value]="minLongitude || ''"
+            [value]="filters?.minLongitude || ''"
             (input)="handleNumberInput($event, 'minLongitude')"
             step="0.1"
             min="-180"
@@ -48,7 +48,7 @@
           <input
             type="number"
             id="maxLongitude"
-            [value]="maxLongitude || ''"
+            [value]="filters?.maxLongitude || ''"
             (input)="handleNumberInput($event, 'maxLongitude')"
             step="0.1"
             min="-180"
@@ -60,7 +60,7 @@
           <label for="continentFilter">Continent:</label>
           <select
             id="continentFilter"
-            [value]="selectedContinent"
+            [value]="filters?.selectedContinent"
             (change)="handleContinentChange($event)"
           >
             <option value="">All Continents</option>
@@ -80,7 +80,7 @@
           <input
             type="number"
             id="minDepth"
-            [value]="minDepth || ''"
+            [value]="filters?.minDepth || ''"
             (input)="handleNumberInput($event, 'minDepth')"
             step="0.1"
             min="0"
@@ -91,7 +91,7 @@
           <input
             type="number"
             id="maxDepth"
-            [value]="maxDepth || ''"
+            [value]="filters?.maxDepth || ''"
             (input)="handleNumberInput($event, 'maxDepth')"
             step="0.1"
             min="0"
@@ -102,7 +102,7 @@
           <input
             type="number"
             id="minEnergy"
-            [value]="minEnergy || ''"
+            [value]="filters?.minEnergy || ''"
             (input)="handleNumberInput($event, 'minEnergy')"
             min="0"
           />
@@ -112,7 +112,7 @@
           <input
             type="number"
             id="maxEnergy"
-            [value]="maxEnergy || ''"
+            [value]="filters?.maxEnergy || ''"
             (input)="handleNumberInput($event, 'maxEnergy')"
             min="0"
           />

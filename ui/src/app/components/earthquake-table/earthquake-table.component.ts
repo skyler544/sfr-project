@@ -1,28 +1,60 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
+import { Subscription, combineLatest } from 'rxjs';
+import { EarthquakeService } from '../../services/earthquake.service';
+import { Earthquake } from '../../models/earthquake';
+import { SortColumn, SortDirection } from '../../models/sort-criteria';
 
 @Component({
   selector: 'earthquake-table',
   templateUrl: './earthquake-table.component.html',
   styleUrls: ['./earthquake-table.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EarthquakeTableComponent {
-  @Input() earthquakes: any[] = [];
-  @Input() currentPage: number = 1;
-  @Input() pageSize: number = 10;
-  @Input() sortColumn: string = 'id';
-  @Input() sortDirection: 'asc' | 'desc' = 'asc';
+export class EarthquakeTableComponent implements OnInit, OnDestroy {
+  earthquakes: Earthquake[] = [];
+  paginatedData: Earthquake[] = [];
+  totalPages: number = 1;
+  currentPage: number = 1;
+  pageSize: number = 10;
+  sortColumn: SortColumn = 'id';
+  sortDirection: SortDirection = 'asc';
 
-  @Output() sort = new EventEmitter<{ column: string }>();
-  @Output() resetSort = new EventEmitter<void>();
-  @Output() pageChange = new EventEmitter<number>();
+  private subscription = new Subscription();
 
-  get totalPages(): number {
-    return Math.ceil(this.earthquakes.length / this.pageSize);
+  constructor(
+    private earthquakeService: EarthquakeService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit() {
+    this.subscription.add(
+      combineLatest([
+        this.earthquakeService.filters$,
+        this.earthquakeService.sorting$,
+        this.earthquakeService.pagination$,
+      ]).subscribe(([filters, sorting, pagination]) => {
+        this.sortColumn = sorting.column;
+        this.sortDirection = sorting.direction;
+        this.currentPage = pagination.currentPage;
+        this.pageSize = pagination.pageSize;
+
+        this.earthquakes = this.earthquakeService.getFilteredData();
+        this.paginatedData = this.earthquakeService.getPaginatedData();
+        this.totalPages = this.earthquakeService.getTotalPages();
+
+        this.cdr.markForCheck();
+      })
+    );
   }
 
-  get paginatedData() {
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    return this.earthquakes.slice(startIndex, startIndex + this.pageSize);
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
   isSortingDefault(): boolean {
@@ -30,11 +62,11 @@ export class EarthquakeTableComponent {
   }
 
   onSortBy(column: string) {
-    this.sort.emit({ column });
+    this.earthquakeService.updateSorting(column as SortColumn);
   }
 
   onResetSorting() {
-    this.resetSort.emit();
+    this.earthquakeService.resetSorting();
   }
 
   getPageNumbers(): number[] {
@@ -78,19 +110,25 @@ export class EarthquakeTableComponent {
 
   nextPage() {
     if (this.currentPage < this.totalPages) {
-      this.pageChange.emit(this.currentPage + 1);
+      this.earthquakeService.updatePagination(
+        'currentPage',
+        this.currentPage + 1
+      );
     }
   }
 
   prevPage() {
     if (this.currentPage > 1) {
-      this.pageChange.emit(this.currentPage - 1);
+      this.earthquakeService.updatePagination(
+        'currentPage',
+        this.currentPage - 1
+      );
     }
   }
 
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages) {
-      this.pageChange.emit(page);
+      this.earthquakeService.updatePagination('currentPage', page);
     }
   }
 
