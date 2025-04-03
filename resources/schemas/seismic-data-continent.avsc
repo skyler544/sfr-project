@@ -1,0 +1,37 @@
+{
+  "type": "map",
+  "name": "EarthquakeByContinent",
+  "values": {
+    "type": "map",
+    "values": {
+      "type": "record",
+      "name": "EventData",
+      "fields": [
+        {
+          "name": "id",
+          "type": "int"
+        },
+        {
+          "name": "continent",
+          "type": "string"
+        },
+        {
+          "name": "latitude",
+          "type": "double"
+        },
+        {
+          "name": "longitude",
+          "type": "double"
+        },
+        {
+          "name": "depth",
+          "type": "double"
+        },
+        {
+          "name": "energy",
+          "type": "double"
+        }
+      ]
+    }
+  }
+}
