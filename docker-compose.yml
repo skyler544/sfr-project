@@ -24,6 +24,27 @@ services:
       - broker-3
     command: ["./consumer"]
 
+  # DATABASE
+  # ----------------------------------------------------
+  mysql:
+    image: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: seismic
+      MYSQL_USER: seismic
+      MYSQL_PASSWORD: seismic
+
+  persistence:
+    build:
+      context: ./persistence
+    depends_on:
+      - mysql
+      - broker-1
+      - broker-2
+      - broker-3
+    command: ["./persistence"]
+
   # KAFKA
   # ----------------------------------------------------
   controller-1:
