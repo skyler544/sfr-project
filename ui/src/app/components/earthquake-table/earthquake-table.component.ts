@@ -38,10 +38,11 @@ export class EarthquakeTableComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscription.add(
       combineLatest([
+        this.earthquakeService.earthquakes$,
         this.earthquakeService.filters$,
         this.earthquakeService.sorting$,
         this.earthquakeService.pagination$,
-      ]).subscribe(([filters, sorting, pagination]) => {
+      ]).subscribe(([earthquakes, filters, sorting, pagination]) => {
         this.sortColumn = sorting.column;
         this.sortDirection = sorting.direction;
         this.currentPage = pagination.currentPage;
