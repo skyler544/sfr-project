@@ -26,7 +26,7 @@ func InitMySQLSchema(dsn string) (*sql.DB, error) {
 
 	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS sensors (
-			sensor VARCHAR(255) PRIMARY KEY
+			sensor VARCHAR(255) PRIMARY KEY NOT NULL
 		)
 	`)
 	if err != nil {
@@ -35,8 +35,8 @@ func InitMySQLSchema(dsn string) (*sql.DB, error) {
 
 	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS sensor_data (
-			uuid CHAR(36) PRIMARY KEY,
-			sensor VARCHAR(255),
+			uuid CHAR(36) PRIMARY KEY NOT NULL,
+			sensor VARCHAR(255) NOT NULL,
 			latitude VARCHAR(64),
 			longitude VARCHAR(64),
 			depth DOUBLE,
