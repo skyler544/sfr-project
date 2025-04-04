@@ -31,15 +31,7 @@ func ConfigureTopicManager(topic goka.Stream, brokers []string) (*goka.TopicMana
 	}
 	defer tm.Close()
 
-	err = tm.EnsureStreamExists(string(topic), 8)
-	if err != nil {
-		return nil, fmt.Errorf("Error creating kafka topic %s: %v\n", topic, err)
-	}
-
-	err = tm.EnsureStreamExists(string("seismic-events-aggregated"), 8)
-	if err != nil {
-		return nil, fmt.Errorf("Error creating kafka topic %s: %v\n", topic, err)
-	}
-
+	_ = tm.EnsureStreamExists(string(topic), 8)
+	_ = tm.EnsureStreamExists(string("seismic-events-aggregated"), 8)
 	return tmc, err
 }

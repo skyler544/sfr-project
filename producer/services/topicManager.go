@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/lovoo/goka"
@@ -32,10 +31,6 @@ func SubscribeToTopic(topic goka.Stream, brokers []string) error {
 	}
 	defer tm.Close()
 
-	err = tm.EnsureStreamExists(string(topic), 8)
-	if err != nil {
-		log.Printf("Error creating kafka topic %s: %v\n", topic, err)
-	}
-
+	_ = tm.EnsureStreamExists(string(topic), 8)
 	return err
 }
