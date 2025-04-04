@@ -8,8 +8,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { Subscription, combineLatest } from 'rxjs';
 import { EarthquakeService } from '../../services/earthquake.service';
-import { Earthquake } from '../../models/earthquake';
 import { SortColumn, SortDirection } from '../../models/sort-criteria';
+import { SensorData } from '@app/models/sensor-data';
 
 @Component({
   selector: 'earthquake-table',
@@ -20,8 +20,8 @@ import { SortColumn, SortDirection } from '../../models/sort-criteria';
   imports: [CommonModule],
 })
 export class EarthquakeTableComponent implements OnInit, OnDestroy {
-  earthquakes: Earthquake[] = [];
-  paginatedData: Earthquake[] = [];
+  earthquakes: SensorData[] = [];
+  paginatedData: SensorData[] = [];
   totalPages: number = 1;
   currentPage: number = 1;
   pageSize: number = 10;
@@ -140,7 +140,11 @@ export class EarthquakeTableComponent implements OnInit, OnDestroy {
     return Math.min(a, b);
   }
 
-  trackByQuake(index: number, item: Earthquake): number {
+  parseFloat(value: string): number {
+    return parseFloat(value);
+  }
+
+  trackByQuake(index: number, item: SensorData): string {
     return item.id;
   }
 }
