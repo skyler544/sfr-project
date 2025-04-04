@@ -1,66 +1,94 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Seismic Event Stream Processing (Go + Goka)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This project implements an event streaming pipeline for seismic sensor data using [Goka](https://github.com/lovoo/goka) — a Go library for building real-time data processing applications with Apache Kafka and Schema Registry integration.
 
-## About Laravel
+## 🧱 Architecture
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+The system consists of:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **`producer/`** – Continuously emits simulated seismic events to Kafka (`seismic-events` topic).
+- **`consumer/`** – Aggregates events by sensor ID and publishes them to a new Kafka topic (`seismic-events-aggregated`).
+- **`docker-compose.yml`** – Sets up Kafka brokers, Schema Registry, and microservice orchestration.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 📊 Stream Design
 
-## Learning Laravel
+```
+seismic-events (input stream)
+        |
+        ▼
+     [consumer]
+        |
+        ▼
+seismic-events-aggregated (output stream)
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- The **`producer`** generates events resembling earthquake sensor readings.
+- The **`consumer`** groups these events by `sensorid`, appending each new event to a per-sensor list.
+- The aggregated result is emitted to a separate Kafka topic.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## ⚙️ Horizontal Scalability
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+The `consumer` service is **horizontally scalable** and runs **3 replicas** by default.
 
-## Laravel Sponsors
+- Goka automatically distributes Kafka topic partitions across consumer instances.
+- When a consumer goes down, Goka **rebalances** the group and assigns its workload to the remaining consumers.
+- Kafka ensures **each event is only processed once** by one instance in the group.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+> Example behavior: If there are only 3 sensors sending data, Kafka may assign 2 consumers all the work while the third stays idle. Stopping one of the active consumers triggers a rebalance, and the idle one picks up the load.
 
-### Premium Partners
+## 🚀 Why Go + Goka?
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+- **Go** is fast, simple, and widely used in cloud-native ecosystems.
+- **Goka** abstracts away Kafka boilerplate and provides:
+  - State storage
+  - Group coordination
+  - Automatic partition assignment
+- **Docker Compose** was chosen for local orchestration due to its simplicity and ease of setup.
 
-## Contributing
+## 🛠️ Setup
+> ⚠ Beware! Do not do this on a slow network connection. The `schema-registry` image is ~1.4GiB
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+To run the system locally:
 
-## Code of Conduct
+```bash
+docker compose up --build
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+This starts:
+- Kafka broker cluster (3 nodes)
+- Schema Registry
+- Producer (sending simulated data)
+- 3x Consumer replicas (aggregating data)
 
-## Security Vulnerabilities
+## 📥 Topics
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- **Input:** `seismic-events`
+- **Output:** `seismic-events-aggregated`
 
-## License
+## 🧪 Observing Output
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+To consume aggregated output manually:
+
+```bash
+docker exec -it broker-1 bash
+cd /opt/kafka/bin
+./kafka-console-consumer.sh \
+  --bootstrap-server broker-1:19092,broker-2:19092,broker-3:19092 \
+  --topic seismic-events-aggregated \
+  --from-beginning
+```
+
+## 📁 Project Structure
+
+```
+.
+├── producer/                  # Emits simulated seismic data
+├── consumer/                  # Aggregates events by sensor ID
+├── docker-compose.yml         # Orchestration
+└── README.md
+```
+
+---
+
+Made with ❤️ and Go 🐹
+```
