@@ -25,7 +25,12 @@ export class EarthquakeFiltersComponent implements OnInit, OnDestroy {
   constructor(private earthquakeService: EarthquakeService) {}
 
   ngOnInit() {
-    this.availableContinents = this.earthquakeService.getAvailableContinents();
+    this.subscription.add(
+      this.earthquakeService.earthquakes$.subscribe(() => {
+        this.availableContinents =
+          this.earthquakeService.getAvailableContinents();
+      })
+    );
 
     this.subscription.add(
       this.earthquakeService.filters$.subscribe((filters) => {

@@ -1,102 +1,21 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, catchError, throwError } from 'rxjs';
 import { Earthquake } from '../models/earthquake';
 import { SortColumn, SortDirection } from '../models/sort-criteria';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EarthquakeService {
-  private earthquakeDummyData: Earthquake[] = [
-    {
-      id: 1,
-      continent: 'Africa',
-      latitude: 10,
-      longitude: 20,
-      depth: 1,
-      energy: 42,
-    },
-    {
-      id: 2,
-      continent: 'Africa',
-      latitude: 15,
-      longitude: 28,
-      depth: 0.45,
-      energy: 100000,
-    },
-    {
-      id: 3,
-      continent: 'Asia',
-      latitude: -5.3,
-      longitude: 120.8,
-      depth: 3.2,
-      energy: 15700,
-    },
-    {
-      id: 4,
-      continent: 'North America',
-      latitude: 37.7,
-      longitude: -122.4,
-      depth: 5.1,
-      energy: 31000,
-    },
-    {
-      id: 5,
-      continent: 'Europe',
-      latitude: 51.5,
-      longitude: -0.12,
-      depth: 0.8,
-      energy: 2100,
-    },
-    {
-      id: 6,
-      continent: 'Oceania',
-      latitude: -33.9,
-      longitude: 151.2,
-      depth: 2.4,
-      energy: 82500,
-    },
-    {
-      id: 7,
-      continent: 'Asia',
-      latitude: 35.6,
-      longitude: 139.7,
-      depth: 17.6,
-      energy: 247000,
-    },
-    {
-      id: 8,
-      continent: 'North America',
-      latitude: 19.4,
-      longitude: -99.1,
-      depth: 8.2,
-      energy: 56300,
-    },
-    {
-      id: 9,
-      continent: 'Europe',
-      latitude: 48.8,
-      longitude: 2.3,
-      depth: 0.3,
-      energy: 1800,
-    },
-    {
-      id: 10,
-      continent: 'South America',
-      latitude: -12.0,
-      longitude: -77.0,
-      depth: 6.7,
-      energy: 73200,
-    },
-    {
-      id: 11,
-      continent: 'Antarctica',
-      latitude: -77.85,
-      longitude: 167.17,
-      depth: 4.2,
-      energy: 12400,
-    },
-  ];
+  private apiUrl = 'http://localhost:8080/Seismic';
+  private earthquakeData = new BehaviorSubject<Earthquake[]>([]);
+
+  earthquakes$ = this.earthquakeData.asObservable();
+
+  constructor(private http: HttpClient) {
+    this.loadEarthquakes();
+  }
 
   private filterState = new BehaviorSubject<{
     minLatitude: number | null;
@@ -209,8 +128,11 @@ export class EarthquakeService {
 
   getAvailableContinents(): string[] {
     const continents = new Set<string>();
-    this.earthquakeDummyData.forEach((quake) => {
-      continents.add(quake.continent);
+
+    this.earthquakeData.value.forEach((quake: Earthquake) => {
+      if (quake.continent) {
+        continents.add(quake.continent);
+      }
     });
     return Array.from(continents).sort();
   }
@@ -219,8 +141,8 @@ export class EarthquakeService {
     const filters = this.filterState.value;
     const sorting = this.sortState.value;
 
-    return this.earthquakeDummyData
-      .filter((quake) => {
+    return this.earthquakeData.value
+      .filter((quake: Earthquake) => {
         if (
           filters.selectedContinent &&
           quake.continent !== filters.selectedContinent
@@ -288,16 +210,25 @@ export class EarthquakeService {
 
         return true;
       })
-      .sort((a, b) => {
+      .sort((a: Earthquake, b: Earthquake) => {
         const direction = sorting.direction === 'asc' ? 1 : -1;
 
-        if (a[sorting.column] < b[sorting.column]) {
-          return -1 * direction;
+        switch (sorting.column) {
+          case 'id':
+            return (a.id - b.id) * direction;
+          case 'continent':
+            return a.continent.localeCompare(b.continent) * direction;
+          case 'latitude':
+            return (a.latitude - b.latitude) * direction;
+          case 'longitude':
+            return (a.longitude - b.longitude) * direction;
+          case 'depth':
+            return (a.depth - b.depth) * direction;
+          case 'energy':
+            return (a.energy - b.energy) * direction;
+          default:
+            return 0;
         }
-        if (a[sorting.column] > b[sorting.column]) {
-          return 1 * direction;
-        }
-        return 0;
       });
   }
 
@@ -313,5 +244,25 @@ export class EarthquakeService {
     return Math.ceil(
       this.getFilteredData().length / this.paginationState.value.pageSize
     );
+  }
+
+  loadEarthquakes(): void {
+    this.http
+      .get<Earthquake[]>(this.apiUrl)
+      .pipe(
+        catchError((error) => {
+          console.error('Error fetching earthquake data:', error);
+          return throwError(
+            () =>
+              new Error(
+                'Failed to load earthquake data. Please try again later.'
+              )
+          );
+        })
+      )
+      .subscribe((data: Earthquake[]) => {
+        this.earthquakeData.next(data);
+        console.log('Earthquake data loaded:', data);
+      });
   }
 }
