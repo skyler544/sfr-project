@@ -70,6 +70,8 @@ This starts:
 To consume aggregated output manually:
 
 ```bash
+docker exec -it broker-1 bash
+cd /opt/kafka/bin
 ./kafka-console-consumer.sh \
   --bootstrap-server broker-1:19092,broker-2:19092,broker-3:19092 \
   --topic seismic-events-aggregated \
@@ -82,7 +84,6 @@ To consume aggregated output manually:
 .
 ├── producer/                  # Emits simulated seismic data
 ├── consumer/                  # Aggregates events by sensor ID
-├── kafka-config/              # Kafka & Schema Registry setup
 ├── docker-compose.yml         # Orchestration
 └── README.md
 ```
