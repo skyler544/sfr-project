@@ -1,0 +1,129 @@
+<div class="filter-section">
+  <h2>Filter Earthquakes</h2>
+  <div class="filter-grid">
+    <div class="filter-group-container">
+      <h3>Geographic Filters</h3>
+      <div class="filter-subgrid">
+        <div class="filter-group">
+          <label for="minLatitude">Min Latitude:</label>
+          <input
+            type="number"
+            id="minLatitude"
+            [value]="filters?.minLatitude || ''"
+            (input)="handleNumberInput($event, 'minLatitude')"
+            step="0.1"
+            min="-90"
+            max="90"
+            placeholder="-90 to 90"
+          />
+        </div>
+        <div class="filter-group">
+          <label for="maxLatitude">Max Latitude:</label>
+          <input
+            type="number"
+            id="maxLatitude"
+            [value]="filters?.maxLatitude || ''"
+            (input)="handleNumberInput($event, 'maxLatitude')"
+            step="0.1"
+            min="-90"
+            max="90"
+            placeholder="-90 to 90"
+          />
+        </div>
+        <div class="filter-group">
+          <label for="minLongitude">Min Longitude:</label>
+          <input
+            type="number"
+            id="minLongitude"
+            [value]="filters?.minLongitude || ''"
+            (input)="handleNumberInput($event, 'minLongitude')"
+            step="0.1"
+            min="-180"
+            max="180"
+            placeholder="-180 to 180"
+          />
+        </div>
+        <div class="filter-group">
+          <label for="maxLongitude">Max Longitude:</label>
+          <input
+            type="number"
+            id="maxLongitude"
+            [value]="filters?.maxLongitude || ''"
+            (input)="handleNumberInput($event, 'maxLongitude')"
+            step="0.1"
+            min="-180"
+            max="180"
+            placeholder="-180 to 180"
+          />
+        </div>
+        <div class="filter-group continent-filter">
+          <label for="continentFilter">Continent:</label>
+          <select
+            id="continentFilter"
+            [value]="filters?.selectedContinent"
+            (change)="handleContinentChange($event)"
+          >
+            <option value="">All Continents</option>
+            <option *ngFor="let continent of availableContinents">
+              {{ continent }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-group-container">
+      <h3>Seismic Properties</h3>
+      <div class="filter-subgrid">
+        <div class="filter-group">
+          <label for="minDepth">Min Depth (km):</label>
+          <input
+            type="number"
+            id="minDepth"
+            [value]="filters?.minDepth || ''"
+            (input)="handleNumberInput($event, 'minDepth')"
+            step="0.1"
+            min="0"
+          />
+        </div>
+        <div class="filter-group">
+          <label for="maxDepth">Max Depth (km):</label>
+          <input
+            type="number"
+            id="maxDepth"
+            [value]="filters?.maxDepth || ''"
+            (input)="handleNumberInput($event, 'maxDepth')"
+            step="0.1"
+            min="0"
+          />
+        </div>
+        <div class="filter-group">
+          <label for="minEnergy">Min Energy:</label>
+          <input
+            type="number"
+            id="minEnergy"
+            [value]="filters?.minEnergy || ''"
+            (input)="handleNumberInput($event, 'minEnergy')"
+            min="0"
+          />
+        </div>
+        <div class="filter-group">
+          <label for="maxEnergy">Max Energy:</label>
+          <input
+            type="number"
+            id="maxEnergy"
+            [value]="filters?.maxEnergy || ''"
+            (input)="handleNumberInput($event, 'maxEnergy')"
+            min="0"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-actions">
+    <button class="reset-btn" (click)="onResetFilters()">
+      Reset All Filters
+    </button>
+  </div>
+</div>

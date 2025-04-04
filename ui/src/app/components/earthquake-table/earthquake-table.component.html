@@ -1,0 +1,108 @@
+<div class="table-container">
+  <div class="table-controls">
+    <div class="sort-info" *ngIf="!isSortingDefault()">
+      <span>Sorted by: {{ sortColumn }} ({{ sortDirection }})</span>
+      <button
+        class="reset-sort-btn"
+        (click)="onResetSorting()"
+        title="Reset to default sorting"
+      >
+        <i class="reset-icon">↺</i>
+      </button>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th (click)="onSortBy('id')">
+          ID
+          <span *ngIf="sortColumn === 'id'">{{
+            sortDirection === "asc" ? "↑" : "↓"
+          }}</span>
+        </th>
+        <th (click)="onSortBy('continent')">
+          Continent
+          <span *ngIf="sortColumn === 'continent'">{{
+            sortDirection === "asc" ? "↑" : "↓"
+          }}</span>
+        </th>
+        <th (click)="onSortBy('latitude')">
+          Latitude
+          <span *ngIf="sortColumn === 'latitude'">{{
+            sortDirection === "asc" ? "↑" : "↓"
+          }}</span>
+        </th>
+        <th (click)="onSortBy('longitude')">
+          Longitude
+          <span *ngIf="sortColumn === 'longitude'">{{
+            sortDirection === "asc" ? "↑" : "↓"
+          }}</span>
+        </th>
+        <th (click)="onSortBy('depth')">
+          Depth (km)
+          <span *ngIf="sortColumn === 'depth'">{{
+            sortDirection === "asc" ? "↑" : "↓"
+          }}</span>
+        </th>
+        <th (click)="onSortBy('energy')">
+          Energy
+          <span *ngIf="sortColumn === 'energy'">{{
+            sortDirection === "asc" ? "↑" : "↓"
+          }}</span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let quake of paginatedData; trackBy: trackByQuake">
+        <td>{{ quake.id }}</td>
+        <td>{{ quake.continent }}</td>
+        <td>{{ quake.latitude.toFixed(2) }}°</td>
+        <td>{{ quake.longitude.toFixed(2) }}°</td>
+        <td>{{ quake.depth.toFixed(1) }}</td>
+        <td>{{ quake.energy.toLocaleString() }}</td>
+      </tr>
+      <tr *ngIf="earthquakes.length === 0">
+        <td colspan="6" class="no-data">No earthquakes match your filters</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="pagination-controls" *ngIf="earthquakes.length > 0">
+    <div class="pagination-info">
+      Showing {{ (currentPage - 1) * pageSize + 1 }} to
+      {{ getMinValue(currentPage * pageSize, earthquakes.length) }}
+      of {{ earthquakes.length }} earthquakes
+    </div>
+    <div class="pagination-buttons">
+      <button
+        class="page-btn"
+        [disabled]="currentPage === 1"
+        (click)="prevPage()"
+      >
+        &laquo; Prev
+      </button>
+
+      <div class="page-numbers">
+        <ng-container *ngFor="let page of getPageNumbers()">
+          <span class="ellipsis" *ngIf="page === -1">...</span>
+          <button
+            *ngIf="page !== -1"
+            class="page-number"
+            [class.active]="currentPage === page"
+            (click)="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+        </ng-container>
+      </div>
+
+      <button
+        class="page-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="nextPage()"
+      >
+        Next &raquo;
+      </button>
+    </div>
+  </div>
+</div>
