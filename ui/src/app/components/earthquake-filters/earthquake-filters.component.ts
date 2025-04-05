@@ -19,19 +19,11 @@ import { FilterCriteria } from '@app/models/filter-criteria';
 })
 export class EarthquakeFiltersComponent implements OnInit, OnDestroy {
   filters: FilterCriteria | null = null;
-  availableContinents: string[] = [];
   private subscription = new Subscription();
 
   constructor(private earthquakeService: EarthquakeService) {}
 
   ngOnInit() {
-    this.subscription.add(
-      this.earthquakeService.earthquakes$.subscribe(() => {
-        this.availableContinents =
-          this.earthquakeService.getAvailableContinents();
-      })
-    );
-
     this.subscription.add(
       this.earthquakeService.filters$.subscribe((filters) => {
         this.filters = filters;
@@ -54,11 +46,6 @@ export class EarthquakeFiltersComponent implements OnInit, OnDestroy {
         this.earthquakeService.updateFilter(property, numberValue);
       }
     }
-  }
-
-  handleContinentChange(event: Event) {
-    const value = (event.target as HTMLSelectElement).value;
-    this.earthquakeService.updateFilter('selectedContinent', value);
   }
 
   onResetFilters() {

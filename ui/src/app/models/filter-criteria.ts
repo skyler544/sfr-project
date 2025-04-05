@@ -7,5 +7,4 @@ export interface FilterCriteria {
   maxDepth: number | null;
   minEnergy: number | null;
   maxEnergy: number | null;
-  selectedContinent: string;
 }

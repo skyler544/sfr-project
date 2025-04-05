@@ -1,5 +1,30 @@
 services:
 
+  # API
+  # ----------------------------------------------------
+  api:
+    build:
+      context: ./api/seismic
+      dockerfile: Dockerfile
+    container_name: seismic-api
+    ports:
+      - "8080:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+
+  # FRONTEND
+  # ----------------------------------------------------
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    container_name: seismic-ui
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+
   # MICROSERVICES
   # ----------------------------------------------------
   producer:

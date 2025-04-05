@@ -1,6 +1,6 @@
 export type SortColumn =
   | 'id'
-  | 'continent'
+  | 'sensor'
   | 'latitude'
   | 'longitude'
   | 'depth'

@@ -56,19 +56,6 @@
             placeholder="-180 to 180"
           />
         </div>
-        <div class="filter-group continent-filter">
-          <label for="continentFilter">Continent:</label>
-          <select
-            id="continentFilter"
-            [value]="filters?.selectedContinent"
-            (change)="handleContinentChange($event)"
-          >
-            <option value="">All Continents</option>
-            <option *ngFor="let continent of availableContinents">
-              {{ continent }}
-            </option>
-          </select>
-        </div>
       </div>
     </div>
 
