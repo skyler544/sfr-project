@@ -8,6 +8,7 @@ The system consists of:
 
 - **`producer/`** – Continuously emits simulated seismic events to Kafka (`seismic-events` topic).
 - **`consumer/`** – Aggregates events by sensor ID and publishes them to a new Kafka topic (`seismic-events-aggregated`).
+- **`persistence/`** - Consume the aggregated events and populate a `mysql` database with the events from the stream.
 - **`docker-compose.yml`** – Sets up Kafka brokers, Schema Registry, and microservice orchestration.
 
 ## 📊 Stream Design
@@ -20,6 +21,9 @@ seismic-events (input stream)
         |
         ▼
 seismic-events-aggregated (output stream)
+        |
+        ▼
+     [persistence]
 ```
 
 - The **`producer`** generates events resembling earthquake sensor readings.
@@ -91,4 +95,3 @@ cd /opt/kafka/bin
 ---
 
 Made with ❤️ and Go 🐹
-```
