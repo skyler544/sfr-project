@@ -1,62 +1,35 @@
-﻿using seismic.Models;
+﻿using MySql.Data.MySqlClient;
+using seismic.Models;
 
-namespace seismic.Service;
-
-public class SeismicService
+namespace seismic.Service
 {
-    public static List<SensorData> GetData()
+    public class SeismicService(IConfiguration configuration)
     {
-        return
-        [
-            new SensorData
-            {
-                Id = Guid.NewGuid(),
-                Sensor = new Sensor { Id = Guid.NewGuid() },
-                Latitude = "37.7749",
-                Longitude = "-122.4194",
-                Depth = 8.2,
-                Energy = 4.5
-            },
+        private readonly string? _connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            new SensorData
-            {
-                Id = Guid.NewGuid(),
-                Sensor = new Sensor { Id = Guid.NewGuid() },
-                Latitude = "34.0522",
-                Longitude = "-118.2437",
-                Depth = 12.7,
-                Energy = 3.2
-            },
+        public List<SensorData> GetData()
+        {
+            var sensorDataList = new List<SensorData>();
 
-            new SensorData
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+            var command = new MySqlCommand("SELECT * FROM sensor_data", connection);
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
             {
-                Id = Guid.NewGuid(),
-                Sensor = new Sensor { Id = Guid.NewGuid() },
-                Latitude = "40.7128",
-                Longitude = "-74.0060",
-                Depth = 5.4,
-                Energy = 2.8
-            },
-
-            new SensorData
-            {
-                Id = Guid.NewGuid(),
-                Sensor = new Sensor { Id = Guid.NewGuid() },
-                Latitude = "35.6762",
-                Longitude = "139.6503",
-                Depth = 15.3,
-                Energy = 5.9
-            },
-
-            new SensorData
-            {
-                Id = Guid.NewGuid(),
-                Sensor = new Sensor { Id = Guid.NewGuid() },
-                Latitude = "-33.8688",
-                Longitude = "151.2093",
-                Depth = 9.7,
-                Energy = 3.6
+                var sensorData = new SensorData
+                {
+                    Id = reader.GetGuid("uuid"),
+                    Sensor = new Sensor { Id = reader.GetString("sensor") },
+                    Latitude = reader.GetString("latitude"),
+                    Longitude = reader.GetString("longitude"),
+                    Depth = reader.GetDouble("depth"),
+                    Energy = reader.GetDouble("energy")
+                };
+                sensorDataList.Add(sensorData);
             }
-        ];
+
+            return sensorDataList;
+        }
     }
 }

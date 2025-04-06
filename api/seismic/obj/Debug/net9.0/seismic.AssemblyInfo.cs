@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("seismic")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+83480b20cc523c65f2a1f152f201b6a56e07743f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f0057597693d31d791d099d7aff1440d502e8882")]
 [assembly: System.Reflection.AssemblyProductAttribute("seismic")]
 [assembly: System.Reflection.AssemblyTitleAttribute("seismic")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

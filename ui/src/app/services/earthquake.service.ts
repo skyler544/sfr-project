@@ -129,8 +129,8 @@ export class EarthquakeService {
 
     return this.earthquakeData.value
       .filter((quake: SensorData) => {
-        const lat = parseFloat(quake.latitude);
-        const lng = parseFloat(quake.longitude);
+        const lat = this.parseLatitude(quake.latitude);
+        const lng = this.parseLongitude(quake.longitude);
 
         if (filters.minLatitude !== null && lat < filters.minLatitude) {
           return false;
@@ -146,35 +146,17 @@ export class EarthquakeService {
           return false;
         }
 
-        const safeMinDepth =
-          filters.minDepth !== null && filters.minDepth >= 0
-            ? filters.minDepth
-            : null;
-        if (safeMinDepth !== null && quake.depth < safeMinDepth) {
+        if (filters.minDepth !== null && quake.depth < filters.minDepth) {
+          return false;
+        }
+        if (filters.maxDepth !== null && quake.depth > filters.maxDepth) {
           return false;
         }
 
-        const safeMaxDepth =
-          filters.maxDepth !== null && filters.maxDepth >= 0
-            ? filters.maxDepth
-            : null;
-        if (safeMaxDepth !== null && quake.depth > safeMaxDepth) {
+        if (filters.minEnergy !== null && quake.energy < filters.minEnergy) {
           return false;
         }
-
-        const safeMinEnergy =
-          filters.minEnergy !== null && filters.minEnergy >= 0
-            ? filters.minEnergy
-            : null;
-        if (safeMinEnergy !== null && quake.energy < safeMinEnergy) {
-          return false;
-        }
-
-        const safeMaxEnergy =
-          filters.maxEnergy !== null && filters.maxEnergy >= 0
-            ? filters.maxEnergy
-            : null;
-        if (safeMaxEnergy !== null && quake.energy > safeMaxEnergy) {
+        if (filters.maxEnergy !== null && quake.energy > filters.maxEnergy) {
           return false;
         }
 
@@ -190,11 +172,15 @@ export class EarthquakeService {
             return a.sensor.id.localeCompare(b.sensor.id) * direction;
           case 'latitude':
             return (
-              (parseFloat(a.latitude) - parseFloat(b.latitude)) * direction
+              (this.parseLatitude(a.latitude) -
+                this.parseLatitude(b.latitude)) *
+              direction
             );
           case 'longitude':
             return (
-              (parseFloat(a.longitude) - parseFloat(b.longitude)) * direction
+              (this.parseLongitude(a.longitude) -
+                this.parseLongitude(b.longitude)) *
+              direction
             );
           case 'depth':
             return (a.depth - b.depth) * direction;
@@ -246,5 +232,29 @@ export class EarthquakeService {
 
         this.earthquakeData.next(transformedData);
       });
+  }
+
+  private parseLatitude(latString: string): number {
+    if (!latString) return 0;
+    const value = parseFloat(latString);
+    return latString.endsWith('S') ? -value : value;
+  }
+
+  private parseLongitude(lngString: string): number {
+    if (!lngString) return 0;
+    const value = parseFloat(lngString);
+    return lngString.endsWith('W') ? -value : value;
+  }
+
+  private parseCoordinate(coordString: string): {
+    value: number;
+    direction: 'N' | 'S' | 'E' | 'W';
+  } {
+    if (!coordString) return { value: 0, direction: 'N' };
+
+    const direction = coordString.slice(-1) as 'N' | 'S' | 'E' | 'W';
+    const value = parseFloat(coordString);
+
+    return { value, direction };
   }
 }

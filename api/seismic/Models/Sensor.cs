@@ -2,5 +2,5 @@
 
 public record Sensor
 {
-    public required Guid Id { get; set; }
+    public required string Id { get; set; }
 }

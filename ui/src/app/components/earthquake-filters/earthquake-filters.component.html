@@ -5,55 +5,51 @@
       <h3>Geographic Filters</h3>
       <div class="filter-subgrid">
         <div class="filter-group">
-          <label for="minLatitude">Min Latitude:</label>
+          <label for="minLatitude">Min Latitude (-90 to 90):</label>
           <input
             type="number"
             id="minLatitude"
-            [value]="filters?.minLatitude || ''"
+            [value]="filters?.minLatitude ?? ''"
             (input)="handleNumberInput($event, 'minLatitude')"
-            step="0.1"
+            step="1"
             min="-90"
             max="90"
-            placeholder="-90 to 90"
           />
         </div>
         <div class="filter-group">
-          <label for="maxLatitude">Max Latitude:</label>
+          <label for="maxLatitude">Max Latitude (-90 to 90):</label>
           <input
             type="number"
             id="maxLatitude"
-            [value]="filters?.maxLatitude || ''"
+            [value]="filters?.maxLatitude ?? ''"
             (input)="handleNumberInput($event, 'maxLatitude')"
-            step="0.1"
+            step="1"
             min="-90"
             max="90"
-            placeholder="-90 to 90"
           />
         </div>
         <div class="filter-group">
-          <label for="minLongitude">Min Longitude:</label>
+          <label for="minLongitude">Min Longitude (-180 to 180):</label>
           <input
             type="number"
             id="minLongitude"
-            [value]="filters?.minLongitude || ''"
+            [value]="filters?.minLongitude ?? ''"
             (input)="handleNumberInput($event, 'minLongitude')"
-            step="0.1"
+            step="1"
             min="-180"
             max="180"
-            placeholder="-180 to 180"
           />
         </div>
         <div class="filter-group">
-          <label for="maxLongitude">Max Longitude:</label>
+          <label for="maxLongitude">Max Longitude (-180 to 180):</label>
           <input
             type="number"
             id="maxLongitude"
-            [value]="filters?.maxLongitude || ''"
+            [value]="filters?.maxLongitude ?? ''"
             (input)="handleNumberInput($event, 'maxLongitude')"
-            step="0.1"
+            step="1"
             min="-180"
             max="180"
-            placeholder="-180 to 180"
           />
         </div>
       </div>
@@ -67,9 +63,9 @@
           <input
             type="number"
             id="minDepth"
-            [value]="filters?.minDepth || ''"
+            [value]="filters?.minDepth ?? ''"
             (input)="handleNumberInput($event, 'minDepth')"
-            step="0.1"
+            step="1"
             min="0"
           />
         </div>
@@ -78,9 +74,9 @@
           <input
             type="number"
             id="maxDepth"
-            [value]="filters?.maxDepth || ''"
+            [value]="filters?.maxDepth ?? ''"
             (input)="handleNumberInput($event, 'maxDepth')"
-            step="0.1"
+            step="1"
             min="0"
           />
         </div>
@@ -89,7 +85,7 @@
           <input
             type="number"
             id="minEnergy"
-            [value]="filters?.minEnergy || ''"
+            [value]="filters?.minEnergy ?? ''"
             (input)="handleNumberInput($event, 'minEnergy')"
             min="0"
           />
@@ -99,7 +95,7 @@
           <input
             type="number"
             id="maxEnergy"
-            [value]="filters?.maxEnergy || ''"
+            [value]="filters?.maxEnergy ?? ''"
             (input)="handleNumberInput($event, 'maxEnergy')"
             min="0"
           />

@@ -6,12 +6,12 @@ namespace seismic.Controller;
 
 [ApiController]
 [Route("[controller]")]
-public class Seismic : ControllerBase
+public class Seismic(SeismicService seismicService) : ControllerBase
 {
     [HttpGet]
     public ActionResult<List<SensorData>> Get()
     {
-        var seismicData = SeismicService.GetData();
+        var seismicData = seismicService.GetData();
         return Ok(seismicData);
     }
 }
