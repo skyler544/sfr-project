@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, catchError, throwError } from 'rxjs';
-import { Earthquake } from '../models/earthquake';
+import { SensorData } from '../models/sensor-data';
 import { SortColumn, SortDirection } from '../models/sort-criteria';
 import { HttpClient } from '@angular/common/http';
 
@@ -9,7 +9,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class EarthquakeService {
   private apiUrl = 'http://localhost:8080/Seismic';
-  private earthquakeData = new BehaviorSubject<Earthquake[]>([]);
+  private earthquakeData = new BehaviorSubject<SensorData[]>([]);
 
   earthquakes$ = this.earthquakeData.asObservable();
 
@@ -26,7 +26,6 @@ export class EarthquakeService {
     maxDepth: number | null;
     minEnergy: number | null;
     maxEnergy: number | null;
-    selectedContinent: string;
   }>({
     minLatitude: null,
     maxLatitude: null,
@@ -36,7 +35,6 @@ export class EarthquakeService {
     maxDepth: null,
     minEnergy: null,
     maxEnergy: null,
-    selectedContinent: '',
   });
 
   private sortState = new BehaviorSubject<{
@@ -90,7 +88,6 @@ export class EarthquakeService {
       maxDepth: null,
       minEnergy: null,
       maxEnergy: null,
-      selectedContinent: '',
     });
 
     this.updatePagination('currentPage', 1);
@@ -126,102 +123,65 @@ export class EarthquakeService {
     });
   }
 
-  getAvailableContinents(): string[] {
-    const continents = new Set<string>();
-
-    this.earthquakeData.value.forEach((quake: Earthquake) => {
-      if (quake.continent) {
-        continents.add(quake.continent);
-      }
-    });
-    return Array.from(continents).sort();
-  }
-
-  getFilteredData(): Earthquake[] {
+  getFilteredData(): SensorData[] {
     const filters = this.filterState.value;
     const sorting = this.sortState.value;
 
     return this.earthquakeData.value
-      .filter((quake: Earthquake) => {
-        if (
-          filters.selectedContinent &&
-          quake.continent !== filters.selectedContinent
-        ) {
+      .filter((quake: SensorData) => {
+        const lat = this.parseLatitude(quake.latitude);
+        const lng = this.parseLongitude(quake.longitude);
+
+        if (filters.minLatitude !== null && lat < filters.minLatitude) {
+          return false;
+        }
+        if (filters.maxLatitude !== null && lat > filters.maxLatitude) {
           return false;
         }
 
-        if (
-          filters.minLatitude !== null &&
-          quake.latitude < filters.minLatitude
-        ) {
+        if (filters.minLongitude !== null && lng < filters.minLongitude) {
           return false;
         }
-        if (
-          filters.maxLatitude !== null &&
-          quake.latitude > filters.maxLatitude
-        ) {
+        if (filters.maxLongitude !== null && lng > filters.maxLongitude) {
           return false;
         }
 
-        if (
-          filters.minLongitude !== null &&
-          quake.longitude < filters.minLongitude
-        ) {
+        if (filters.minDepth !== null && quake.depth < filters.minDepth) {
           return false;
         }
-        if (
-          filters.maxLongitude !== null &&
-          quake.longitude > filters.maxLongitude
-        ) {
+        if (filters.maxDepth !== null && quake.depth > filters.maxDepth) {
           return false;
         }
 
-        const safeMinDepth =
-          filters.minDepth !== null && filters.minDepth >= 0
-            ? filters.minDepth
-            : null;
-        if (safeMinDepth !== null && quake.depth < safeMinDepth) {
+        if (filters.minEnergy !== null && quake.energy < filters.minEnergy) {
           return false;
         }
-
-        const safeMaxDepth =
-          filters.maxDepth !== null && filters.maxDepth >= 0
-            ? filters.maxDepth
-            : null;
-        if (safeMaxDepth !== null && quake.depth > safeMaxDepth) {
-          return false;
-        }
-
-        const safeMinEnergy =
-          filters.minEnergy !== null && filters.minEnergy >= 0
-            ? filters.minEnergy
-            : null;
-        if (safeMinEnergy !== null && quake.energy < safeMinEnergy) {
-          return false;
-        }
-
-        const safeMaxEnergy =
-          filters.maxEnergy !== null && filters.maxEnergy >= 0
-            ? filters.maxEnergy
-            : null;
-        if (safeMaxEnergy !== null && quake.energy > safeMaxEnergy) {
+        if (filters.maxEnergy !== null && quake.energy > filters.maxEnergy) {
           return false;
         }
 
         return true;
       })
-      .sort((a: Earthquake, b: Earthquake) => {
+      .sort((a: SensorData, b: SensorData) => {
         const direction = sorting.direction === 'asc' ? 1 : -1;
 
         switch (sorting.column) {
           case 'id':
-            return (a.id - b.id) * direction;
-          case 'continent':
-            return a.continent.localeCompare(b.continent) * direction;
+            return a.id.localeCompare(b.id) * direction;
+          case 'sensor':
+            return a.sensor.id.localeCompare(b.sensor.id) * direction;
           case 'latitude':
-            return (a.latitude - b.latitude) * direction;
+            return (
+              (this.parseLatitude(a.latitude) -
+                this.parseLatitude(b.latitude)) *
+              direction
+            );
           case 'longitude':
-            return (a.longitude - b.longitude) * direction;
+            return (
+              (this.parseLongitude(a.longitude) -
+                this.parseLongitude(b.longitude)) *
+              direction
+            );
           case 'depth':
             return (a.depth - b.depth) * direction;
           case 'energy':
@@ -232,7 +192,7 @@ export class EarthquakeService {
       });
   }
 
-  getPaginatedData(): Earthquake[] {
+  getPaginatedData(): SensorData[] {
     const { currentPage, pageSize } = this.paginationState.value;
     const filteredData = this.getFilteredData();
 
@@ -248,7 +208,7 @@ export class EarthquakeService {
 
   loadEarthquakes(): void {
     this.http
-      .get<Earthquake[]>(this.apiUrl)
+      .get<any[]>(this.apiUrl)
       .pipe(
         catchError((error) => {
           console.error('Error fetching earthquake data:', error);
@@ -260,9 +220,41 @@ export class EarthquakeService {
           );
         })
       )
-      .subscribe((data: Earthquake[]) => {
-        this.earthquakeData.next(data);
-        console.log('Earthquake data loaded:', data);
+      .subscribe((data) => {
+        const transformedData: SensorData[] = data.map((sensorData) => ({
+          id: sensorData.id,
+          sensor: sensorData.sensor,
+          latitude: sensorData.latitude,
+          longitude: sensorData.longitude,
+          depth: sensorData.depth,
+          energy: sensorData.energy,
+        }));
+
+        this.earthquakeData.next(transformedData);
       });
+  }
+
+  private parseLatitude(latString: string): number {
+    if (!latString) return 0;
+    const value = parseFloat(latString);
+    return latString.endsWith('S') ? -value : value;
+  }
+
+  private parseLongitude(lngString: string): number {
+    if (!lngString) return 0;
+    const value = parseFloat(lngString);
+    return lngString.endsWith('W') ? -value : value;
+  }
+
+  private parseCoordinate(coordString: string): {
+    value: number;
+    direction: 'N' | 'S' | 'E' | 'W';
+  } {
+    if (!coordString) return { value: 0, direction: 'N' };
+
+    const direction = coordString.slice(-1) as 'N' | 'S' | 'E' | 'W';
+    const value = parseFloat(coordString);
+
+    return { value, direction };
   }
 }

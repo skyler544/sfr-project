@@ -20,9 +20,9 @@
             sortDirection === "asc" ? "↑" : "↓"
           }}</span>
         </th>
-        <th (click)="onSortBy('continent')">
-          Continent
-          <span *ngIf="sortColumn === 'continent'">{{
+        <th (click)="onSortBy('sensor')">
+          Sensor ID
+          <span *ngIf="sortColumn === 'sensor'">{{
             sortDirection === "asc" ? "↑" : "↓"
           }}</span>
         </th>
@@ -55,9 +55,9 @@
     <tbody>
       <tr *ngFor="let quake of paginatedData; trackBy: trackByQuake">
         <td>{{ quake.id }}</td>
-        <td>{{ quake.continent }}</td>
-        <td>{{ quake.latitude.toFixed(2) }}°</td>
-        <td>{{ quake.longitude.toFixed(2) }}°</td>
+        <td>{{ quake.sensor.id }}</td>
+        <td>{{ quake.latitude }}</td>
+        <td>{{ quake.longitude }}</td>
         <td>{{ quake.depth.toFixed(1) }}</td>
         <td>{{ quake.energy.toLocaleString() }}</td>
       </tr>

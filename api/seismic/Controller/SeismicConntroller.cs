@@ -1,22 +1,17 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using seismic.Models;
+using seismic.Service;
 
-namespace seismic.Controllers;
+namespace seismic.Controller;
 
 [ApiController]
 [Route("[controller]")]
-public class Seismic : ControllerBase
+public class Seismic(SeismicService seismicService) : ControllerBase
 {
     [HttpGet]
-    public ActionResult<List<SeismicData>> Get()
+    public ActionResult<List<SensorData>> Get()
     {
-        var seismicData = new List<SeismicData>
-        {
-            new SeismicData { Id = 1, Continent = "Asia", Latitude = 34.0, Longitude = 100.0, Depth = 10.0, Energy = 5.0 },
-            new SeismicData { Id = 2, Continent = "Europe", Latitude = 50.0, Longitude = 10.0, Depth = 20.0, Energy = 6.0 },
-            new SeismicData { Id = 3, Continent = "North America", Latitude = 40.0, Longitude = -100.0, Depth = 30.0, Energy = 7.0 }
-        };
+        var seismicData = seismicService.GetData();
         return Ok(seismicData);
     }
 }
